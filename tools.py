@@ -1,12 +1,31 @@
 from datetime import datetime
-import json
-
+import requests
 
 def get_current_time():
   return datetime.now().astimezone().isoformat()
 
 def get_weather_info(city):
-  return "Rain"
+    url = f"https://wttr.in{city}?format=j1"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status() # Raises an error for bad responses
+        data = response.json()
+
+        # Parse current condition details
+        current = data['current_condition'][0]
+        temp_c = current['temp_C']
+        weather_desc = current['weatherDesc'][0]['value']
+        humidity = current['humidity']
+
+        print(f"Weather in {city}:")
+        print(f"Temperature: {temp_c}°C")
+        print(f"Condition: {weather_desc}")
+        print(f"Humidity: {humidity}%")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching weather: {e}")
+
 
 TOOLS = [
   {
