@@ -1,60 +1,3 @@
-# # ollama pull phi3:mini
-
-# from openai import OpenAI
-# from dotenv import load_dotenv
-# from google import genai
-
-# import os
-
-# load_dotenv()
-
-# # client = OpenAI()
-# client = genai.Client(api_key=os.getenv("API_KEY"))
-
-# # client = OpenAI(
-# #   base_url = os.getenv("BASE_URL"),
-# #   api_key=os.getenv("API_KEY")
-# # )
-
-# messages = []
-
-# while True:
-
-#   user_input = input("\nUser: ")
-
-#   if user_input.lower() in ["quit", "exit", "bye"]:
-#     break
-
-#   messages.append({"role": "user", "parts":  [{ "text": user_input } ]})
-
-#   # completion = client.chat.completions.create(
-#   #   model=os.getenv("MODEL"),
-#   #   messages = messages
-#   # )
-
-#   interaction = client.interactions.create(
-#       model=os.getenv("MODEL"),
-#       contents=messages
-#   )
-#   # print(interaction.output_text)
-
-#   # role - Who is speaking
-#   # content - What they said
-
-#   content = interaction.output_text
-
-#   print(content)
-
-#   messages.append({"role": "model", "parts": [{ "text": content }] })
-
-# sudo systemctl stop ollama
-
-# sudo lsof -i :11434 -> Find the process using port 11434:
-
-# kill 1234
-
-
-
 from dotenv import load_dotenv
 from google import genai
 from datetime import datetime
@@ -69,11 +12,6 @@ client = genai.Client(api_key=os.getenv("API_KEY"))
 model = os.getenv("MODEL")
 
 previous_interaction_id = None
-
-def get_current_time():
-  return datetime.now().astimezone().isoformat()
-
-# get_current_time_function = TOOLS[0]
 
 # system_instruction="""
 # You are a helpful AI assistant.
@@ -108,10 +46,28 @@ while True:
 
             if step.type == "function_call":
 
-                print(f"\nCalling tool: {step.name}")
+                print(f"\ntools.py tool: {step.name}")
+
+                print (step)
 
                 if step.name == "get_current_time":
-                    result = get_current_time()
+                    result = FUNCTION_NAME_TO_FUNCTION_MAP[step.name]
+
+                    function_results.append({
+                        "type": "function_result",
+                        "name": step.name,
+                        "call_id": step.id,
+                        "result": [
+                            {
+                                "type": "text",
+                                "text": json.dumps(result)
+                            }
+                        ]
+                    })
+
+                if step.name == "get_weather_info":
+                    result = FUNCTION_NAME_TO_FUNCTION_MAP[step.name]
+                    result = result(step.arguments['location'])
 
                     function_results.append({
                         "type": "function_result",
